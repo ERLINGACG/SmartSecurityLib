@@ -69,12 +69,15 @@ void dnnDetection::DnnDetectorYolo::DetectImage(unsigned char* inputData, int si
        float y_factor = inputImg.rows / 640.0f;
 
        //yolov5s模型的输出大小为[1,25200.85]
-        const int dimensions = 85;
+       //yolov5-A模型的输出大小为[1,25200.11]
+        const int dimensions = 11;
         const int rows = 25200;
             
         vector<int> class_ids;//分类类别索引
         vector<float> confidences;//置信度
         vector<cv::Rect> boxes;//边框坐标信息
+        std::cout<<"当前任务：检测"<<std::endl;
+        std::cout<<"输出层名称："<<outputs_name[0]<<std::endl;
         for (int i = 0; i < rows; i++) {
             float confidence = data[4]; //置信度
             if (confidence > this->confThreshold) { // 过滤置信度低的目标
@@ -102,7 +105,7 @@ void dnnDetection::DnnDetectorYolo::DetectImage(unsigned char* inputData, int si
                   }
 
             }
-            data += 85; //跳过85个元素，到下一个检测框
+            data += 11; //跳过85个元素，到下一个检测框
         }
          auto t_postprocess_end = std::chrono::system_clock::now();
 
