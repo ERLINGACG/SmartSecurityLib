@@ -4,6 +4,7 @@
 #include <opencv2/imgcodecs.hpp> 
 #include <opencv2/imgproc.hpp>
 #include "smartsecurity/data/image_data.h"
+#include "smartsecurity/data/output_json.h"
 #include "smartsecurity/cv/edge/edgedetection.h"
 #include "smartsecurity/cv/dnn/dnnDetection.h"
 #include "smartsecurity/cv/dnn/dnnDetectionFace.h"

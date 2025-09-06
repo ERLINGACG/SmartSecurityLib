@@ -1,7 +1,7 @@
 #include "smartsecurity/cv/dnn/dnnDetection.h"
 #include <iostream>
+#include <map>
 #include "opencv2/core/cuda.hpp"
-
 
 dnnDetection::DnnDetectorYolo::DnnDetectorYolo(
     const char* Yolo_path,bool isCUDA,double confThreshold,double nmsThreshold
@@ -33,7 +33,12 @@ dnnDetection::DnnDetectorYolo::DnnDetectorYolo(
     }
     
 }
-void dnnDetection::DnnDetectorYolo::DetectImage(unsigned char* inputData, int size, data::ImageData& OutputData){
+void dnnDetection::DnnDetectorYolo::DetectImage(
+        unsigned char* inputData, int size,
+        data::ImageData& OutputData,
+        data::json::OutputJson& json
+){
+    std::lock_guard<std::mutex> lock(m_mutex); // 加锁
     std::cout<<"开始检测"<<std::endl;
     auto start_total = std::chrono::system_clock::now(); // 总开始时间
     auto t_decode_start = std::chrono::system_clock::now();
@@ -78,6 +83,7 @@ void dnnDetection::DnnDetectorYolo::DetectImage(unsigned char* inputData, int si
         vector<cv::Rect> boxes;//边框坐标信息
         std::cout<<"当前任务：检测"<<std::endl;
         std::cout<<"输出层名称："<<outputs_name[0]<<std::endl;
+
         for (int i = 0; i < rows; i++) {
             float confidence = data[4]; //置信度
             if (confidence > this->confThreshold) { // 过滤置信度低的目标
@@ -89,7 +95,6 @@ void dnnDetection::DnnDetectorYolo::DetectImage(unsigned char* inputData, int si
                   if (max_class_score > 0.25) { // 过滤分数低的目标
                      confidences.push_back(confidence);//置信度
 				     class_ids.push_back(class_id.x);  //类别索引
-
                      float x = data[0];
                      float y = data[1];
                      float w = data[2];
@@ -99,19 +104,16 @@ void dnnDetection::DnnDetectorYolo::DetectImage(unsigned char* inputData, int si
 				    int top = int((y - 0.5 * h) * y_factor); //左上角y坐标
 				    int width = int(w * x_factor);           //宽度
 				    int height = int(h * y_factor);          //高度
-
-                    
                     boxes.push_back(cv::Rect(left, top, width, height));
                   }
-
             }
-            data += 11; //跳过85个元素，到下一个检测框
+            data += 85; //跳过85个元素，到下一个检测框
         }
-         auto t_postprocess_end = std::chrono::system_clock::now();
+        auto t_postprocess_end = std::chrono::system_clock::now();
 
         std::vector<int> nms_result; //nms结果
-        std::cout<<this->confThreshold<<std::endl;
-        std::cout<<this->nmsThreshold<<std::endl;
+//        std::cout<<this->confThreshold<<std::endl;
+//        std::cout<<this->nmsThreshold<<std::endl;
 
 	    cv::dnn::NMSBoxes(
             boxes, confidences,
@@ -120,6 +122,7 @@ void dnnDetection::DnnDetectorYolo::DetectImage(unsigned char* inputData, int si
         ); //非极大值抑制
         
         auto t_draw_start = std::chrono::system_clock::now();
+        auto dataMap = std::map<std::string,int>();
         for(int i = 0; i < nms_result.size(); i++){
             int index = nms_result[i];
             cv::Rect box = boxes[index];
@@ -128,8 +131,34 @@ void dnnDetection::DnnDetectorYolo::DetectImage(unsigned char* inputData, int si
                     cv::rectangle(inputImg, box, cv::Scalar(0, 255, 0), 2);
                     cv::putText(inputImg, this->classNames[class_ids[index]] + ": " + to_string(confidences[index]), cv::Point(box.x, box.y - 5), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 2);
                     std::cout<<this->classNames[class_ids[index]]<<":"<<confidences[index]<<std::endl;
+                // 直接增加计数，如果键不存在会自动创建并初始化为0
+                dataMap[this->classNames[class_ids[index]]]++;
             }
         }
+        std::string  dataJson;
+        // 打印每个类别的检测数量
+        if(!dataMap.empty()){
+
+            for (const auto& pair : dataMap) {
+                std::cout << pair.first << ": " << pair.second << std::endl;
+                dataJson += "\"" + pair.first + "\": " + std::to_string(pair.second) + ",";
+            }
+            dataJson.erase(dataJson.size() - 1);
+            dataJson = "{" + dataJson + "}";
+            std::cout<<dataJson<<std::endl;
+
+            auto buffer = std::make_unique<char[]>(dataJson.size() + 1);
+            std::copy(dataJson.begin(), dataJson.end(), buffer.get());
+            buffer[dataJson.size()] = '\0';
+            json.json = std::move(buffer);
+            json.size = static_cast<int>(dataJson.size());
+        }else{
+            dataJson = "{}";
+        }
+
+
+
+
         auto t_draw_end = std::chrono::system_clock::now();
         std::cout<<"绘制结果完成"<<std::endl;
 

@@ -15,6 +15,7 @@ class DnnBasicClass:public cv_dnn::interface::DnnInterface{
     public:
         ~DnnBasicClass() override =default;
         void DetectImage(unsigned char* inputData,int size,data::ImageData& OutputData) override =0;
+
     };
 }
 #endif //SMARTSECURITYCORELIB_DNN_BASIC_CLASS_H
