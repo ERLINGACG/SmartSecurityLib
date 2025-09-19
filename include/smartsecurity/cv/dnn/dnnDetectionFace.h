@@ -19,6 +19,8 @@ class DnnDetectorFace : public cv_dnn::dnnBasic::DnnBasicClass{
         void InitModelFace(param::face::FaceParam *pParam);
         void LoadModelFace(param::face::FaceParam *param);
 
+        void LoadJson(const char *path) override;
+
         void getFaceFeature(unsigned char* inputData, int size,
                              cv_param::EncodeParam* encodeParam,
                              cv_dnn::face::DnnFeatureFace* faceFeature,
@@ -28,7 +30,9 @@ class DnnDetectorFace : public cv_dnn::dnnBasic::DnnBasicClass{
 
         static void resizeWithPadding(cv::Mat &orgImage,int inputWidth,int inputHeight);
 
-        void SetBlob(cv::Mat& blob,cv::Mat& orgImage);
+
+
+        void SetBlob(cv::Mat& blob,cv::Mat& orgImage) override;
 
         void Forward(cv::Mat& output) ;
 

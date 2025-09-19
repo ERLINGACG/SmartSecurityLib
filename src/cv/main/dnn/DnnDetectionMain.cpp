@@ -8,7 +8,12 @@ extern "C"{
     CORE_CV_API DnnDetectorYolo* createDnnDetector(const char* path, double confidence, double nms){
         return new DnnDetectorYolo(path, true, confidence, nms);
     }
-
+    CORE_CV_API DnnDetectorYolo* createDnnDetector_1(const char* jsonPath){
+        return new DnnDetectorYolo(jsonPath);
+    }
+    CORE_CV_API void destroyDnnDetector(DnnDetectorYolo* detector){
+        delete detector;
+    }
 }
 
 extern "C"{
@@ -18,7 +23,7 @@ extern "C"{
     {
 
         try{
-            detector->DetectImage(inputData,size,OutputData,json);
+            detector->DetectImage_3(inputData,size,OutputData,json);
         }catch(std::exception& e){
             std::cout << e.what() << std::endl;
         }

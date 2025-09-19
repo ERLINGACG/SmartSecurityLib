@@ -10,9 +10,11 @@ namespace cv_dnn::face{
     class DnnFeatureFace : public cv_dnn::dnnBasic::DnnBasicClass{
         public:
             explicit DnnFeatureFace(cv_dnn::param::face::FaceFeatureParam* param);
-            ~DnnFeatureFace() override=default;
+            ~DnnFeatureFace() override=default;;
             void InitModelFace(cv_dnn::param::face::FaceFeatureParam* param);
             void LoadModelFace(cv_dnn::param::face::FaceFeatureParam* param) ;
+            void LoadJson(const char *path) override{};
+            void SetBlob(cv::Mat& blob,cv::Mat& inputImg) override{};
             void DetectImage(unsigned char* inputData, int size, data::ImageData& OutputData) override{};
             cv::dnn::Net getNet(){return net;}
     };

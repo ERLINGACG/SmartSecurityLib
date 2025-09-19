@@ -245,3 +245,7 @@ double DnnDetectorFace::getDistanceForByte(unsigned char* input_1,
     double euclidean_dist = cv::norm(vec1 - vec2);
     return euclidean_dist; // 或返回 1 - euclidean_dist
 }
+
+void DnnDetectorFace::LoadJson(const char *path) {
+
+}

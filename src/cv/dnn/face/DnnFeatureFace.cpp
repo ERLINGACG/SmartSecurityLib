@@ -12,6 +12,7 @@ DnnFeatureFace::DnnFeatureFace(cv_dnn::param::face::FaceFeatureParam* param) {
 void DnnFeatureFace::InitModelFace(cv_dnn::param::face::FaceFeatureParam* param) {
     this->LoadModelFace(param);
 }
+
 void DnnFeatureFace::LoadModelFace(cv_dnn::param::face::FaceFeatureParam* param) {
     this->net = cv::dnn::readNetFromONNX(param->modelPath);
     if(param->isCuda){
