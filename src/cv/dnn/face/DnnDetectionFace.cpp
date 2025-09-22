@@ -2,6 +2,7 @@
 // Created by HP on 2025/8/15.
 //
 #include <iostream>
+#include <fstream>
 #include "smartsecurity/cv/dnn/dnnDetectionFace.h"
 #include "opencv2/imgcodecs.hpp"
 
@@ -40,6 +41,25 @@ void DnnDetectorFace::LoadModelFace(cv_dnn::param::face::FaceParam *param) {
         return;
     }
 
+}
+void DnnDetectorFace::Load(nlohmann::json &config) {
+    try{
+        nlohmann::json activity=config["env"];
+        nlohmann::json env=config[activity];
+        std::cout<<"env:"<<env<<std::endl;
+        std::cout<<"prototxt_path:"<<env["prototxt_path"]<<std::endl;
+        std::cout<<"caffemodel_path:"<<env["caffemodel_path"]<<std::endl;
+        std::cout<<"isCuda:"<<env["isCuda"]<<std::endl;
+        this->net=cv::dnn::readNetFromCaffe(std::string(env["prototxt_path"]),
+                                            std::string (env["caffemodel_path"]));
+        if(env["isCuda"]){
+            this->net.setPreferableBackend(cv::dnn::DNN_BACKEND_CUDA);
+            this->net.setPreferableTarget(cv::dnn::DNN_TARGET_CUDA);
+            std::cout<<"dnn backend cuda"<<std::endl;
+        }
+    }catch(const std::exception& e){
+        std::cout<<"load config file failed"<<e.what()<<std::endl;
+    }
 }
 
 void DnnDetectorFace::getFaceFeature(unsigned char *inputData, int size, cv_param::EncodeParam *encodeParam,
@@ -247,5 +267,28 @@ double DnnDetectorFace::getDistanceForByte(unsigned char* input_1,
 }
 
 void DnnDetectorFace::LoadJson(const char *path) {
+    std::cout<<"load json file "<<path<<std::endl;
+    std::unique_ptr<std::ifstream> jsonfile(new std::ifstream(path));
+    if(jsonfile->is_open()){
+        nlohmann::json j;
+        *jsonfile >> j;
+        try{
+            Load(j);
+        }catch(const std::exception& e){
+            std::cout<<"load config file failed"<<e.what()<<std::endl;
+        }
 
+    }else{
+        std::cout<<"no config file "<<path<<std::endl;
+    }
 }
+
+void DnnDetectorFace::InitModelFace(const char *path) {
+    this->LoadJson(path);
+}
+
+DnnDetectorFace::DnnDetectorFace(const char *path) {
+    this->InitModelFace(path);
+}
+
+

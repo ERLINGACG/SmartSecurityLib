@@ -34,10 +34,14 @@ namespace dnnDetection{
 //            std::vector<string> classNames={"Provence", "Shu", "Logos", "Mon3tr", "Ulpianus", "Texas"};
         public:
             DnnDetectorYolo(const char* Yolo_path, bool isCUDA, double confThreshold, double nmsThreshold)  ;
-            DnnDetectorYolo(const char* jsonPath);
+            explicit DnnDetectorYolo(const char* jsonPath);
              ~DnnDetectorYolo() override =default;
-             void Load(nlohmann::json& j);
-             static  void inputImage(unsigned char *inputData, int size, cv::Mat &orgImage);
+
+
+             void InitModelYolo(const char* jsonPath);
+
+
+             void inputImage(unsigned char *inputData, int size, cv::Mat &orgImage) override;
              void outputImage(cv::Mat& inputImg,
                               std::vector<int>& class_ids,//分类类别索引
                               std::vector<float>& confidences,//置信度
@@ -45,15 +49,17 @@ namespace dnnDetection{
                               std::vector<int>& nms_result,
                               data::ImageData& OutputData,
                               data::json::OutputJson& json);//边框坐标信息
-             void LoadJson(const char* path) override{};
+             void LoadJson(const char* path) override;
+             void Load(nlohmann::json& j) override;
+
              void SetBlob(cv::Mat& blob,cv::Mat& inputImg) override;
-             void Forward(std::vector<Mat>& output_mat);
+             void Forward(std::vector<cv::Mat>& output_mat) override;
              void ProcessResults( cv::Mat& inputImg,
                                   std::vector<Mat>& output_mat,
                                   std::vector<int>& class_ids,//分类类别索引
                                   std::vector<float>& confidences,//置信度
                                   std::vector<cv::Rect>& boxes,//边框坐标信息
-                                  std::vector<int>& nms_result);
+                                  std::vector<int>& nms_result) override;
              void DetectImage_3(
                      unsigned char* inputData,int size,
                      data::ImageData& OutputData,

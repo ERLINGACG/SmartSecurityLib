@@ -12,21 +12,24 @@
 namespace cv_dnn::face{
 class DnnDetectorFace : public cv_dnn::dnnBasic::DnnBasicClass{
     public:
-        explicit DnnDetectorFace(cv_dnn::param::face::FaceParam* param); //重写构造函数
+         explicit DnnDetectorFace(cv_dnn::param::face::FaceParam* param); //重写构造函数
+         explicit DnnDetectorFace(const char* path);
         ~DnnDetectorFace() override =default;
         void DetectImage(unsigned char* inputData, int size, data::ImageData& OutputData) override;
-
         void InitModelFace(param::face::FaceParam *pParam);
+        void InitModelFace(const char* path);
         void LoadModelFace(param::face::FaceParam *param);
 
-        void LoadJson(const char *path) override;
 
+
+        void LoadJson(const char *path) override;
+        void Load(nlohmann::json &config) override;
         void getFaceFeature(unsigned char* inputData, int size,
                              cv_param::EncodeParam* encodeParam,
                              cv_dnn::face::DnnFeatureFace* faceFeature,
                              data::ImageData& OutputData,data::FaceFeatureByte  & faceFeatureByte);
 
-        static void inputImage(unsigned char *inputData, int size, cv::Mat &orgImage);
+        void inputImage(unsigned char *inputData, int size, cv::Mat &orgImage) override;
 
         static void resizeWithPadding(cv::Mat &orgImage,int inputWidth,int inputHeight);
 
@@ -34,11 +37,10 @@ class DnnDetectorFace : public cv_dnn::dnnBasic::DnnBasicClass{
 
         void SetBlob(cv::Mat& blob,cv::Mat& orgImage) override;
 
-        void Forward(cv::Mat& output) ;
+        void Forward(cv::Mat& output) override;
 
         static void outputImage(data::ImageData &OutputData,cv::Mat &orgImage, cv_param::EncodeParam *encodeParam);
-
-        static void ProcessResults(cv::Mat &output, cv::Mat& orgImage,double confidence_threshold,std::vector<cv::Rect>& _faces);
+        void ProcessResults(cv::Mat &output, cv::Mat& orgImage,double confidence_threshold,std::vector<cv::Rect>& _faces) override;
 
         static void ProcessResults_getFeature(
             cv_dnn::face::DnnFeatureFace* featureExtractor,

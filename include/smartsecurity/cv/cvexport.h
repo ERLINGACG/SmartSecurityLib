@@ -17,7 +17,11 @@
 #include <chrono>              // 新增：时间测量
 #include <iomanip>             // 新增：用于流控制符
 #include <string>
-#define CORE_CV_API __declspec(dllexport)
+#ifdef WIN32
+    #define CORE_CV_API __declspec(dllexport)
+#else
+    #define CORE_CV_API  //  Unix/Linux 下为空
+#endif
 #define EXPORT_USE [[maybe_unused]]
 
 #endif

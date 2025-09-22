@@ -5,19 +5,7 @@
 #include "opencv2/core/cuda.hpp"
 
 dnnDetection::DnnDetectorYolo::DnnDetectorYolo(const char *jsonPath) {
-    std::unique_ptr<ifstream> jsonfile(new ifstream(jsonPath));
-    if(jsonfile->is_open()){
-        nlohmann::json j;
-        *jsonfile >> j;
-         try{
-             Load(j);
-         }catch(const std::exception& e){
-             std::cout<<"load config file failed"<<e.what()<<std::endl;
-         }
-
-    }else{
-        std::cout<<"no config file "<<jsonPath<<std::endl;
-    }
+    InitModelYolo(jsonPath);
 }
 
 void dnnDetection::DnnDetectorYolo::Load(nlohmann::json &j) {
@@ -69,9 +57,6 @@ dnnDetection::DnnDetectorYolo::DnnDetectorYolo(
             *jsonfile >> j;
             for(const auto& e : j){
                 this->classNames.emplace_back(e);
-            }
-            for(const auto& e : this->classNames){
-                std::cout<<e<<std::endl;
             }
         }else{
             std::cout<<"classNames.json file is not open"<<std::endl;
@@ -181,7 +166,6 @@ void dnnDetection::DnnDetectorYolo::ProcessResults(
     int rows = 25200;
     for (int i = 0; i < rows; i++) {
         float confidence = data[4]; //置信度
-//        std::cout << "检测框" << i << " 置信度: " << confidence << std::endl;  // 新增
         if (confidence > this->confThreshold) { // 过滤置信度低的目标
             float* classes_scores = data + 5;    //分类分数
             cv::Mat scores(1, static_cast<int>(this->classNames.size()), CV_32FC1, classes_scores); //转换为Mat
@@ -215,6 +199,7 @@ void dnnDetection::DnnDetectorYolo::ProcessResults(
 
 
 }
+
 void dnnDetection::DnnDetectorYolo::DetectImage_3(
         unsigned char *inputData,
         int size, data::ImageData &OutputData,
@@ -438,5 +423,25 @@ void dnnDetection::DnnDetectorYolo::DetectImage(
         std::cout<<"输入数据为空"<<std::endl;
         return;
     }
+}
+
+void dnnDetection::DnnDetectorYolo::LoadJson(const char* path) {
+    std::unique_ptr<ifstream> jsonfile(new ifstream(path));
+    if(jsonfile->is_open()){
+        nlohmann::json j;
+        *jsonfile >> j;
+        try{
+            Load(j);
+        }catch(const std::exception& e){
+            std::cout<<"load config file failed"<<e.what()<<std::endl;
+        }
+
+    }else{
+        std::cout<<"no config file "<<path<<std::endl;
+    }
+}
+
+void dnnDetection::DnnDetectorYolo::InitModelYolo(const char *jsonPath) {
+    LoadJson(jsonPath);
 }
 

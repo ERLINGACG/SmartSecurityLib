@@ -11,6 +11,9 @@ extern "C"{
     EXPORT_USE CORE_CV_API DnnFeatureFace* DnnFeatureFaceCreate(cv_dnn::param::face::FaceFeatureParam* param){
         return new DnnFeatureFace(param);
     }
+    EXPORT_USE CORE_CV_API DnnDetectorFace* DnnDetectorFaceCreate_1(const char* path){
+        return new DnnDetectorFace(path);
+    }
 }
 extern "C"{
     EXPORT_USE CORE_CV_API void DnnDetectorFaceGetFaceFeature_0(
