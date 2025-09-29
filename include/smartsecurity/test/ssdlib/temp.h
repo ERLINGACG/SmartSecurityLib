@@ -1,10 +1,24 @@
-#ifndef _CNN_TEMP_H_
-#define _CNN_TEMP_H_
+#ifndef SMARTSECURITY_SSDLIB_TEMP_H_
+#define SMARTSECURITY_SSDLIB_TEMP_H_
 
-#include "smartsecurity/dlib/dlibexport.h"
-
+#define DLIB_JPEG_SUPPORT
+#define DLIB_PNG_SUPPORT
+#define DLIB_DNN_USE_CUDA
+#define DLIB_USE_CUDA
+#define DLIB_DNNC_USE_CUDA
+#include "dlib/dnn.h"
+#include "dlib/gui_widgets.h"
+#include "dlib/clustering.h"
+#include "dlib/string.h"
+#include "dlib/image_io.h"
+#include "dlib/image_processing/frontal_face_detector.h"
+#include "dlib/image_processing.h"
+#include "dlib/opencv.h"
+#include "dlib/image_processing/render_face_detections.h"
+#include <chrono>
+#include <ctime>
+#include <iostream>
 using namespace dlib;
-
 template <template <int,template<typename>class,int,typename> class block, int N, template<typename>class BN, typename SUBNET>
 using residual = add_prev1<block<N,BN,1,tag1<SUBNET>>>;
 
@@ -32,5 +46,4 @@ using anet_type = loss_metric<fc_no_bias<128,avg_pool_everything<
                             max_pool<3,3,2,2,relu<affine<con<32,7,7,2,2,
                             input_rgb_image_sized<150>
                             >>>>>>>>>>>>;
-
-#endif // _CNN_TEMP_H_
+#endif // SMARTSECURITY_SSDLIB_TEMP_H_

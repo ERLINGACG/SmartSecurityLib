@@ -4,7 +4,7 @@
 
 #ifndef SMARTSECURITYCORELIB_UTILS_H
 #define SMARTSECURITYCORELIB_UTILS_H
-#include "smartsecurity/dlib/dlibexport.h"
+#include "smartsecurity/test/dlib/dlibexport.h"
 namespace dlib_utils{
     class DlibUtils{
         public:

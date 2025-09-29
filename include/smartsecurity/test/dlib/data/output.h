@@ -1,6 +1,6 @@
 #ifndef SMARTSECURITY_DLIB_DATA_OUTPUT_H_
 #define SMARTSECURITY_DLIB_DATA_OUTPUT_H_
-#include "smartsecurity/dlib/dlibexport.h"
+#include "smartsecurity/test/dlib/dlibexport.h"
 
     namespace data{
         struct Output {

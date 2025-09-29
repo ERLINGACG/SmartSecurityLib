@@ -1,8 +1,8 @@
 #ifndef SMART_SECURITY_FACIAL_RECOGNITION_H  // 修改为合法标识符
 #define SMART_SECURITY_FACIAL_RECOGNITION_H
-#include "smartsecurity/dlib/dlibexport.h"
-#include "smartsecurity/dlib/data/output.h"
-#include "smartsecurity/dlib/param/faceNew.h"
+#include "smartsecurity/test/dlib/dlibexport.h"
+#include "smartsecurity/test/dlib/data/output.h"
+#include "smartsecurity/test/dlib/param/faceNew.h"
 
 namespace dlib_face{
         class FacialRecognition {

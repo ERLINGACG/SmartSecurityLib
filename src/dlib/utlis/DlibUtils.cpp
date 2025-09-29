@@ -2,7 +2,7 @@
 // Created by HP on 2025/8/9.
 //
 
-#include "smartsecurity/dlib/utils/utils.h"
+#include "smartsecurity/test/dlib/utils/utils.h"
 
 int dlib_utils::DlibUtils::clearOutputData(data::Output& outputData) {
     try{

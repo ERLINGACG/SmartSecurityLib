@@ -9,6 +9,13 @@ dnnDetection::DnnDetectorYolo::DnnDetectorYolo(const char *jsonPath) {
 }
 
 void dnnDetection::DnnDetectorYolo::Load(nlohmann::json &j) {
+    this->confThreshold=j["confThreshold"];
+    this->nmsThreshold=j["nmsThreshold"];
+
+    cout<<"classNames size:"<<this->classNames.size()<<endl;
+    cout<<"modelPath:"<<j["modelPath"]<<endl;
+    cout<<"confThreshold:"<<this->confThreshold<<endl;
+    cout<<"nmsThreshold:"<<this->nmsThreshold<<endl;
 
     for(const auto& e : j["classNames"]){
         this->classNames.emplace_back(e);
@@ -17,15 +24,27 @@ void dnnDetection::DnnDetectorYolo::Load(nlohmann::json &j) {
     if(this->net.empty()){
         std::cout<<"load model failed"<<std::endl;
     }
-    this->net.setPreferableBackend(DNN_BACKEND_CUDA);
-    this->net.setPreferableTarget(DNN_TARGET_CUDA);
-    this->confThreshold=j["confThreshold"];
-    this->nmsThreshold=j["nmsThreshold"];
+    if(j["isCUDA"]){
+        cv::cuda::DeviceInfo deviceInfo(0);
+        if (deviceInfo.isCompatible()) {
+            cv::cuda::setDevice(0);
+            this->net.setPreferableBackend(DNN_BACKEND_CUDA);
+            this->net.setPreferableTarget(DNN_TARGET_CUDA);
+            std::cout << "[CUDA] 设备 " << 0 << " 初始化完成，计算能力: "
+                      << deviceInfo.majorVersion() << "." << deviceInfo.minorVersion() << std::endl;
+        } else {
+            std::cerr << "[CUDA] 设备不兼容，切换到CPU模式" << std::endl;
+            // 切换到CPU模式
+            this->net.setPreferableBackend(DNN_BACKEND_OPENCV);
+            this->net.setPreferableTarget(DNN_TARGET_CPU);
+        }
+    }else{
+        this->net.setPreferableBackend(DNN_BACKEND_OPENCV);
+        this->net.setPreferableTarget(DNN_TARGET_CPU);
+        std::cout << "[CPU] 初始化完成" << std::endl;
+    }
 
-    cout<<"classNames size:"<<this->classNames.size()<<endl;
-    cout<<"modelPath:"<<j["modelPath"]<<endl;
-    cout<<"confThreshold:"<<this->confThreshold<<endl;
-    cout<<"nmsThreshold:"<<this->nmsThreshold<<endl;
+
 }
 dnnDetection::DnnDetectorYolo::DnnDetectorYolo(
     const char* Yolo_path,bool isCUDA,double confThreshold,double nmsThreshold
@@ -146,8 +165,6 @@ void dnnDetection::DnnDetectorYolo::Forward(std::vector<Mat>& output_mat) {
         return;
     }
     std::cout << "输出矩阵维度: " << output_mat[0].size << std::endl; // 打印维度信息
-
-
 }
 
 void dnnDetection::DnnDetectorYolo::ProcessResults(
