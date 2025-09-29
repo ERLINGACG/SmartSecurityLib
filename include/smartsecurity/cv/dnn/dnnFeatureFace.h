@@ -2,26 +2,26 @@
 // Created by HP on 2025/8/17.
 //
 
-#ifndef SMARTSECURITYCORELIB_DNN_FEATURE_FACE_H
-#define SMARTSECURITYCORELIB_DNN_FEATURE_FACE_H
+#ifndef SMART_SECURITY_DNN_FEATURE_FACE_H
+#define SMART_SECURITY_DNN_FEATURE_FACE_H
+#include "nlohmann/json_fwd.hpp"
 #include "smartsecurity/cv/dnn/dnnBasicClass.h"
 #include "smartsecurity/cv/param/dnnParam.h"
+
 namespace cv_dnn::face{
-    class DnnFeatureFace : public cv_dnn::dnnBasic::DnnBasicClass{
+    class DnnFeatureFace : public dnnBasic::DnnBasicClass{
         public:
-            explicit DnnFeatureFace(cv_dnn::param::face::FaceFeatureParam* param);
+            explicit DnnFeatureFace(param::face::FaceFeatureParam* param);
             explicit DnnFeatureFace(const char* path);
-            ~DnnFeatureFace() override=default;;
-            void InitModelFace(cv_dnn::param::face::FaceFeatureParam* param); //
+            ~DnnFeatureFace() override =default;
+            void InitModelFace(param::face::FaceFeatureParam* param); //
             void InitModelFace(const char* path); //
-            void LoadModelFace(cv_dnn::param::face::FaceFeatureParam* param) ;
+            void LoadModelFace(param::face::FaceFeatureParam* param) ;
 
-            void LoadJson(const char *path) override;
-            void Load(nlohmann::json& j) override;
-            void SetBlob(cv::Mat& blob,cv::Mat& inputImg) override{};
+            void LoadJson(const char *path);
+            void Load(nlohmann::json& j);
 
-            void DetectImage(unsigned char* inputData, int size, data::ImageData& OutputData) override{};
             cv::dnn::Net getNet(){return net;}
     };
 }
-#endif //SMARTSECURITYCORELIB_DNN_FEATURE_FACE_H
+#endif //SMART_SECURITY_DNN_FEATURE_FACE_H

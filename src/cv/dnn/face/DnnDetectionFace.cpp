@@ -5,6 +5,7 @@
 #include <fstream>
 #include "smartsecurity/cv/dnn/dnnDetectionFace.h"
 #include "opencv2/imgcodecs.hpp"
+#include "opencv2/imgproc.hpp"
 
 using namespace  cv_dnn::face;
 
@@ -80,10 +81,10 @@ void DnnDetectorFace::getFaceFeature(unsigned char *inputData, int size, cv_para
     }
     cv_dnn::face::DnnDetectorFace::resizeWithPadding(image,300,300);
     this->SetBlob(blob,image);
-    this->Forward(output);
-    cv_dnn::face::DnnDetectorFace::ProcessResults(output,image,0.6,faces);
-    cv_dnn::face::DnnDetectorFace::ProcessResults_getFeature(faceFeature,faces,image,faceFeatureByte);
-    cv_dnn::face::DnnDetectorFace::outputImage(OutputData,image,encodeParam);
+    this->ForwardFace(output);
+    DnnDetectorFace::ProcessResults(output,image,0.6,faces);
+    ProcessResults_getFeature(faceFeature,faces,image,faceFeatureByte);
+    outputImage(OutputData,image,encodeParam);
 }
 
 void DnnDetectorFace::inputImage(unsigned char *inputData, int size, cv::Mat &orgImage) {
@@ -156,7 +157,7 @@ void DnnDetectorFace::SetBlob(cv::Mat& blob,cv::Mat& orgImage) {
     }
 }
 
-void DnnDetectorFace::Forward(cv::Mat& output)  {
+void DnnDetectorFace::ForwardFace(cv::Mat& output)  {
     try{
         output=this->net.forward();
     }catch (std::exception& e){

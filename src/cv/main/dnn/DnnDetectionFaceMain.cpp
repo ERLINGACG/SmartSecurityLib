@@ -5,23 +5,29 @@
 using  namespace cv_dnn::face;
 
 extern "C"{
-    EXPORT_USE CORE_CV_API DnnDetectorFace* DnnDetectorFaceCreate(cv_dnn::param::face::FaceParam* param){
-        return new DnnDetectorFace(param);
+
+    EXPORT_USE CORE_CV_API DnnFeatureFace* DnnFeatureFaceCreate(const char* path){
+        return new DnnFeatureFace(path);
     }
-    EXPORT_USE CORE_CV_API DnnFeatureFace* DnnFeatureFaceCreate(cv_dnn::param::face::FaceFeatureParam* param){
-        return new DnnFeatureFace(param);
-    }
-    EXPORT_USE CORE_CV_API DnnDetectorFace* DnnDetectorFaceCreate_1(const char* path){
+    EXPORT_USE CORE_CV_API DnnDetectorFace* DnnDetectorFaceCreate(const char* path){
         return new DnnDetectorFace(path);
     }
+
+    EXPORT_USE CORE_CV_API void DnnDetectorFaceDestroy(DnnDetectorFace* dnnDetectorFace){
+        delete dnnDetectorFace;
+    }
+    EXPORT_USE CORE_CV_API void DnnFeatureFaceDestroy(DnnFeatureFace* dnnFeatureFace){
+        delete dnnFeatureFace;
+    }
+
 }
 extern "C"{
-    EXPORT_USE CORE_CV_API void DnnDetectorFaceGetFaceFeature_0(
+    EXPORT_USE CORE_CV_API void DnnDetectorFaceGetFaceFeature(
             DnnDetectorFace* dnnDetectorFace,
             unsigned char* inputData,
             int size,
             cv_param::EncodeParam* encodeParam,
-            cv_dnn::face::DnnFeatureFace* faceFeature,
+            DnnFeatureFace* faceFeature,
             data::ImageData& OutputData,
             data::FaceFeatureByte  & faceFeatureByte
     ){

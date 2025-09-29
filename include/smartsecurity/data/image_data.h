@@ -11,11 +11,13 @@ namespace data{
        
         ~ImageData()=default;
     };
+
     struct FaceFeatureByte{
         int dataSize;
         int faceNum;
         std::unique_ptr<unsigned char[]> data;
     };
+
 };
 
 #endif

@@ -5,13 +5,11 @@
 using namespace dnnDetection;
 using namespace cv_dnn;
 extern "C"{
-    CORE_CV_API DnnDetectorYolo* createDnnDetector(const char* path, double confidence, double nms){
-        return new DnnDetectorYolo(path, true, confidence, nms);
-    }
-    CORE_CV_API DnnDetectorYolo* createDnnDetector_1(const char* jsonPath){
+
+    CORE_CV_API DnnDetectorYolo* CreateDnnDetector(const char* jsonPath){
         return new DnnDetectorYolo(jsonPath);
     }
-    CORE_CV_API void destroyDnnDetector(DnnDetectorYolo* detector){
+    CORE_CV_API void DestroyDnnDetector(DnnDetectorYolo* detector){
         delete detector;
     }
 }

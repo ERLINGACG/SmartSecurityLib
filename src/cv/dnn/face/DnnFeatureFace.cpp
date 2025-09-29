@@ -4,17 +4,17 @@
 #include <iostream>
 #include <fstream>
 #include "smartsecurity/cv/dnn/dnnFeatureFace.h"
-
+#include "nlohmann/json.hpp"
 using  namespace cv_dnn::face;
 
-DnnFeatureFace::DnnFeatureFace(cv_dnn::param::face::FaceFeatureParam* param) {
+DnnFeatureFace::DnnFeatureFace(param::face::FaceFeatureParam* param) {
     this->InitModelFace(param);
 }
-void DnnFeatureFace::InitModelFace(cv_dnn::param::face::FaceFeatureParam* param) {
+void DnnFeatureFace::InitModelFace(param::face::FaceFeatureParam* param) {
     this->LoadModelFace(param);
 }
 
-void DnnFeatureFace::LoadModelFace(cv_dnn::param::face::FaceFeatureParam* param) {
+void DnnFeatureFace::LoadModelFace(param::face::FaceFeatureParam* param) {
     this->net = cv::dnn::readNetFromONNX(param->modelPath);
     if(param->isCuda){
         this->net.setPreferableBackend(cv::dnn::DNN_BACKEND_CUDA);
@@ -44,7 +44,22 @@ void DnnFeatureFace::LoadJson(const char *path) {
 }
 
 void DnnFeatureFace::Load(nlohmann::json &j) {
-
+    nlohmann::json activity=j["env"];
+    json env=j[activity];
+    std::cout<<"env:"<<env<<std::endl;
+    std::cout<<"modelPath:"<<env["facenet_path"]<<std::endl;
+    std::cout<<"isCuda:"<<env["isCuda"]<<std::endl;
+    try{
+        this->net =cv::dnn::readNetFromONNX(std::string(env["facenet_path"]));
+        if(env["isCuda"]) {
+            this->net.setPreferableBackend(cv::dnn::DNN_BACKEND_CUDA);
+            this->net.setPreferableTarget(cv::dnn::DNN_TARGET_CUDA);
+            std::cout<<"dnn backend cuda facenet"<<std::endl;
+        }
+        std::cout<<"facenet laod success"<<std::endl;
+    }catch (const std::exception& e){
+        std::cout<<"load model failed"<<e.what()<<std::endl;
+    }
 }
 
 void DnnFeatureFace::InitModelFace(const char *path) {

@@ -2,78 +2,20 @@
 #include <iostream>
 #include <fstream>
 #include <map>
+
+#include "log/logger.h"
 #include "opencv2/core/cuda.hpp"
 
 dnnDetection::DnnDetectorYolo::DnnDetectorYolo(const char *jsonPath) {
     InitModelYolo(jsonPath);
 }
 
-void dnnDetection::DnnDetectorYolo::Load(nlohmann::json &j) {
-
-    for(const auto& e : j["classNames"]){
-        this->classNames.emplace_back(e);
-    }
-    this->net= readNetFromONNX(string(j["modelPath"]));
-    if(this->net.empty()){
-        std::cout<<"load model failed"<<std::endl;
-    }
-    this->net.setPreferableBackend(DNN_BACKEND_CUDA);
-    this->net.setPreferableTarget(DNN_TARGET_CUDA);
-    this->confThreshold=j["confThreshold"];
-    this->nmsThreshold=j["nmsThreshold"];
-
-    cout<<"classNames size:"<<this->classNames.size()<<endl;
-    cout<<"modelPath:"<<j["modelPath"]<<endl;
-    cout<<"confThreshold:"<<this->confThreshold<<endl;
-    cout<<"nmsThreshold:"<<this->nmsThreshold<<endl;
-}
-dnnDetection::DnnDetectorYolo::DnnDetectorYolo(
-    const char* Yolo_path,bool isCUDA,double confThreshold,double nmsThreshold
-)
-{
-    try{
-        this->net = readNetFromONNX(Yolo_path);
-
-      if(isCUDA && cv::cuda::getCudaEnabledDeviceCount() > 0) {
-            this->net.setPreferableBackend(DNN_BACKEND_CUDA);
-            this->net.setPreferableTarget(DNN_TARGET_CUDA);
-            this->confThreshold=confThreshold;
-            this->nmsThreshold=nmsThreshold;
-            std::cout << "[CUDA] 设备初始化完成（" << cv::cuda::getDevice() << "）" << std::endl;
-            std::cout<<"参数预设："<<std::endl;
-            std::cout<<"置信度阈值："<<this->confThreshold<<std::endl;
-            std::cout<<"非极大值抑制阈值："<<this->nmsThreshold<<std::endl;
-
-        } else {
-            this->net.setPreferableBackend(DNN_BACKEND_OPENCV);
-            this->net.setPreferableTarget(DNN_TARGET_CPU);
-            this->confThreshold=confThreshold;
-            this->nmsThreshold=nmsThreshold;
-            std::cout << "[CPU] 初始化完成" << std::endl;
-        }
-        std::unique_ptr<ifstream> jsonfile(new ifstream("lib/x64/debug/config/classNames.json"));
-        if(jsonfile->is_open()){
-            nlohmann::json j;
-            *jsonfile >> j;
-            for(const auto& e : j){
-                this->classNames.emplace_back(e);
-            }
-        }else{
-            std::cout<<"classNames.json file is not open"<<std::endl;
-        }
-
-        
-    }catch(...){
-        std::cout<<"加载模型失败"<<std::endl;
-    }
-    
-}
 void dnnDetection::DnnDetectorYolo::inputImage(unsigned char *inputData, int size, Mat &orgImage) {
     if(inputData==nullptr || size<=0){
         std::cout<<"inputImage failed,inputData is null or size is 0"<<std::endl;
         return;
     }
-    std::vector<unsigned char> buf(inputData, inputData + size); //构造临时缓冲区
+    std::vector buf(inputData, inputData + size); //构造临时缓冲区
     orgImage = cv::imdecode(buf, cv::IMREAD_COLOR);  // 修正参数为正确解码标志
 }
 void dnnDetection::DnnDetectorYolo::outputImage(cv::Mat& inputImg,
@@ -137,7 +79,7 @@ void dnnDetection::DnnDetectorYolo::SetBlob(cv::Mat& blob, cv::Mat& inputImg) {
     this->net.setInput(blob); // 设置输入
 
 }
-void dnnDetection::DnnDetectorYolo::Forward(std::vector<Mat>& output_mat) {
+void dnnDetection::DnnDetectorYolo::ForwardYolo(std::vector<Mat>& output_mat) {
     vector<string> outputs_name = this->net.getUnconnectedOutLayersNames(); // 获取输出层名称
     this->net.forward(output_mat, outputs_name); // 前向传播
     std::cout<<"前向传播完成"<<std::endl;
@@ -146,8 +88,6 @@ void dnnDetection::DnnDetectorYolo::Forward(std::vector<Mat>& output_mat) {
         return;
     }
     std::cout << "输出矩阵维度: " << output_mat[0].size << std::endl; // 打印维度信息
-
-
 }
 
 void dnnDetection::DnnDetectorYolo::ProcessResults(
@@ -187,17 +127,14 @@ void dnnDetection::DnnDetectorYolo::ProcessResults(
                 boxes.emplace_back(left, top, width, height);
             }
         }
-        data += 85; //跳过85个元素，到下一个检测框
+        data += this->classNames.size()+5; //跳过85个元素，到下一个检测框
     }
     std::cout<<"检测框数量: "<<boxes.size()<<std::endl;
-    cv::dnn::NMSBoxes(
+    NMSBoxes(
             boxes, confidences,
             static_cast<float>(this->confThreshold),
             static_cast<float>(this->nmsThreshold), nms_result
     ); //非极大值抑制
-
-
-
 }
 
 void dnnDetection::DnnDetectorYolo::DetectImage_3(
@@ -221,14 +158,14 @@ void dnnDetection::DnnDetectorYolo::DetectImage_3(
     std::cout<<"输入编码完成"<<endl;
 
     auto t3 = std::chrono::system_clock::now();
-    cv_utils::ImageUtils::resizeWithPadding_mat(orgImage,orgImage,640,640); //原地处理
+    // cv_utils::ImageUtils::resizeWithPadding_mat(orgImage,orgImage,640,640); //原地处理
     auto t4 = std::chrono::system_clock::now();
     std::cout<<"预处理完成"<<endl;
     auto t5 = std::chrono::system_clock::now();
     SetBlob(blob,orgImage);
     auto t6 = std::chrono::system_clock::now();
     std::cout<<"blob设置完成"<<endl;
-    Forward(output_mat);
+    ForwardYolo(output_mat);
     auto t7 = std::chrono::system_clock::now();
     std::cout<<"前向传播完成"<<std::endl;
     ProcessResults(orgImage,output_mat,class_ids,confidences,boxes,nms_result);
@@ -332,15 +269,13 @@ void dnnDetection::DnnDetectorYolo::DetectImage(
                     boxes.push_back(cv::Rect(left, top, width, height));
                   }
             }
-            data += 85; //跳过85个元素，到下一个检测框
+            data += classNames.size()+5;
         }
         auto t_postprocess_end = std::chrono::system_clock::now();
 
         std::vector<int> nms_result; //nms结果
-//        std::cout<<this->confThreshold<<std::endl;
-//        std::cout<<this->nmsThreshold<<std::endl;
 
-	    cv::dnn::NMSBoxes(
+	    NMSBoxes(
             boxes, confidences,
             static_cast<float>(this->confThreshold),
             static_cast<float>(this->nmsThreshold), nms_result
@@ -425,23 +360,91 @@ void dnnDetection::DnnDetectorYolo::DetectImage(
     }
 }
 
-void dnnDetection::DnnDetectorYolo::LoadJson(const char* path) {
-    std::unique_ptr<ifstream> jsonfile(new ifstream(path));
-    if(jsonfile->is_open()){
-        nlohmann::json j;
-        *jsonfile >> j;
-        try{
-            Load(j);
-        }catch(const std::exception& e){
-            std::cout<<"load config file failed"<<e.what()<<std::endl;
-        }
+// void dnnDetection::DnnDetectorYolo::LoadJson(const char* path) {
+//     std::unique_ptr<ifstream> jsonfile(new ifstream(path));
+//     if(jsonfile->is_open()){
+//         nlohmann::json j;
+//         *jsonfile >> j;
+//         try{
+//             Load(j);
+//         }catch(const std::exception& e){
+//             std::cout<<"load config file failed"<<e.what()<<std::endl;
+//         }
+//
+//     }else{
+//         std::cout<<"no config file "<<path<<std::endl;
+//     }
+// }
 
-    }else{
-        std::cout<<"no config file "<<path<<std::endl;
+void dnnDetection::DnnDetectorYolo::InitModelYolo(const char* jsonPath) {
+    Load(jsonPath);
+    InitConfig();
+
+
+}
+
+void dnnDetection::DnnDetectorYolo::InitConfig(){
+    this->nmsThreshold  = config["nmsThreshold"];
+    this->confThreshold =config["confThreshold"];
+
+    for (const auto& e : config["classNames"]){
+        this->classNames.emplace_back(e);
     }
+    this->net=readNetFromONNX(string(config["modelPath"]));
+    if (this->net.empty()){
+        std::cout<<"load model failed"<<std::endl;
+        return;
+    }
+    Ilogger::Logger::info("DnnDetectorYolo","load model success");
+    if (config["isCUDA"]) {
+        this->net.setPreferableBackend(DNN_BACKEND_CUDA);
+        this->net.setPreferableTarget(DNN_TARGET_CUDA);
+        Ilogger::Logger::info("DnnDetectorYolo","[CUDA] 初始化完成");
+    }else {
+        this->net.setPreferableBackend(DNN_BACKEND_DEFAULT);
+        this->net.setPreferableTarget(DNN_TARGET_CPU);
+        Ilogger::Logger::info("DnnDetectorYolo","[CPU] 初始化完成");
+    }
+
 }
 
-void dnnDetection::DnnDetectorYolo::InitModelYolo(const char *jsonPath) {
-    LoadJson(jsonPath);
-}
-
+// void dnnDetection::DnnDetectorYolo::Load(nlohmann::json &j) {
+//     this->confThreshold=j["confThreshold"];
+//     this->nmsThreshold=j["nmsThreshold"];
+//
+//     cout<<"classNames size:"<<this->classNames.size()<<endl;
+//     cout<<"modelPath:"<<j["modelPath"]<<endl;
+//     cout<<"confThreshold:"<<this->confThreshold<<endl;
+//     cout<<"nmsThreshold:"<<this->nmsThreshold<<endl;
+//
+//     for(const auto& e : j["classNames"]){
+//         this->classNames.emplace_back(e);
+//     }
+//
+//     this->net= readNetFromONNX(string(j["modelPath"]));
+//     if(this->net.empty()){
+//         std::cout<<"load model failed"<<std::endl;
+//         return;
+//     }
+//     if(j["isCUDA"]){
+//         cv::cuda::DeviceInfo deviceInfo(0);
+//         if (deviceInfo.isCompatible()) {
+//             cv::cuda::setDevice(0);
+//             this->net.setPreferableBackend(DNN_BACKEND_CUDA);
+//             this->net.setPreferableTarget(DNN_TARGET_CUDA);
+//             std::cout << "[CUDA] 设备 " << 0 << " 初始化完成，计算能力: "
+//                       << deviceInfo.majorVersion() << "." << deviceInfo.minorVersion() << std::endl;
+//         } else {
+//             std::cerr << "[CUDA] 设备不兼容，切换到CPU模式" << std::endl;
+//             // 切换到CPU模式
+//             this->net.setPreferableBackend(DNN_BACKEND_OPENCV);
+//             this->net.setPreferableTarget(DNN_TARGET_CPU);
+//         }
+//     }else{
+//         this->net.setPreferableBackend(DNN_BACKEND_OPENCV);
+//         this->net.setPreferableTarget(DNN_TARGET_CPU);
+//         std::cout << "[CPU] 初始化完成" << std::endl;
+//     }
+//
+//
+// }
