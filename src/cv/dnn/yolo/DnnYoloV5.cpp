@@ -66,6 +66,36 @@ void DnnYoloV5::DebugTime(int size,unsigned char* img,ImageData& OutputData,Outp
     logger.time(&DnnYoloV5::UnPacketData,this,*test,OutputData,json);
 }
 
+void DnnYoloV5::SetSR(cv_sr::DnnSR* sr)
+{
+    this->sr=sr;
+}
+
+void DnnYoloV5::Upsample(Mat& input, Mat& output)
+{
+    logger.setOwnerFuncName(__func__);
+    this->sr->Upsample(input,output);
+}
+
+void DnnYoloV5::DebugTimeSR(int size, unsigned char* img, ImageData& OutputData, OutputJson& json)
+{
+    Mat input;
+    auto test=IDnnParamsV5::Create();
+    logger.time(&DnnYoloV5::Input,this,size,img,input);
+    // if (input.rows< 320 || input.cols < 240)
+    // {
+        logger.time(&DnnYoloV5::Upsample,this,input,input);
+    // }
+    
+    logger.time(&DnnYoloV5::PacketData,this,*test,input);
+    logger.time(&DnnYoloV5::SetBlob,this,*test);
+    logger.time(&DnnYoloV5::Forward,this,*test);
+    logger.time(&DnnYoloV5::Process,this,*test);
+    logger.time(&DnnYoloV5::PostProcessing,this,*test);
+    logger.time(&DnnYoloV5::UnPacketData,this,*test,OutputData,json);
+
+}
+
 
 void DnnYoloV5::InitConfig() {
     logger.setOwnerFuncName(__func__);

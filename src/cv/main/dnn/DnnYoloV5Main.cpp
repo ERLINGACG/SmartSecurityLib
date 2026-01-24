@@ -19,16 +19,25 @@ extern "C" {
      EXPORT_USE CORE_CV_API void DnnYoloV5Debug(DnnYoloV5* dnnYoloV5){
         dnnYoloV5->Debug();
     }
+     EXPORT_USE CORE_CV_API void DnnYoloV5SetSR(DnnYoloV5* dnnYoloV5,cv_sr::DnnSR* sr){
+        dnnYoloV5->SetSR(sr);
+    }
     EXPORT_USE CORE_CV_API void DnnYoloV5DebugTime(DnnYoloV5* dnnYoloV5,int size,unsigned char* img,
         ImageData& OutputData,OutputJson& json
     )
-     {
+    {
          dnnYoloV5->DebugTime(size,img,OutputData,json);
-     }
+    }
+    EXPORT_USE CORE_CV_API void DnnYoloV5DebugSRTime(DnnYoloV5* dnnYoloV5,int size,unsigned char* img,
+        ImageData& OutputData,OutputJson& json
+    )
+    {
+         dnnYoloV5->DebugTimeSR(size,img,OutputData,json);
+    }
     EXPORT_USE CORE_CV_API void DnnYoloV5Detection(DnnYoloV5* dnnYoloV5,int size,unsigned char* img,
         ImageData& OutputData,OutputJson& json
     )
-     {
+    {
          dnnYoloV5->Detection(size,img,OutputData,json);
-     }
+    }
 }

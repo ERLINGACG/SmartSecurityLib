@@ -6,7 +6,9 @@
 #define LOGGER_H
 
 #include <chrono>
+#ifdef WIN32
 #include <format>
+#endif
 #include <string>
 #include <iomanip>
 #include <sstream>
@@ -44,7 +46,7 @@ namespace Ilogger
            std::stringstream ss;
            tm tm_buf{};  // 定义 tm 结构体作为缓冲区（线程安全）
            tm* local_tm = &tm_buf;
-           localtime_s(local_tm, &t);
+           // localtime_s(local_tm, &t);
            ss << put_time(local_tm, "[ %Y-%m-%d %H:%M:%S ]");
            return ss.str();
         };

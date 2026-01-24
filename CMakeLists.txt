@@ -33,11 +33,13 @@ add_library(SmartSecurityCoreLibTest SHARED
    src/cv/dnn/face/DnnDetectionFace.cpp
 
    src/cv/dnn/yolo/DnnYoloV5.cpp
+   src/cv/dnn/yolo/DnnYoloBoot.cpp
    src/cv/dnn/ssd/DnnSSDcaffem.cpp
    src/cv/dnn/facenet/DnnFaceNet.cpp
    src/cv/dnn/facenet/DnnFaceNet512d.cpp
    src/cv/dnn/facenet/DnnArcFace.cpp
    src/cv/dnn/yunet/DnnYuNet.cpp
+   src/cv/dnn/sr/DnnSR.cpp
 
 
 
@@ -46,9 +48,11 @@ add_library(SmartSecurityCoreLibTest SHARED
    src/cv/main/dnn/DnnDetectionFaceMain.cpp
 
    src/cv/main/dnn/DnnYoloV5Main.cpp
+   src/cv/main/dnn/sr/DnnSRMain.cpp
    src/cv/main/dnn/face/DnnSSDcaffemMain.cpp
    src/cv/main/dnn/face/DnnArcFaceMain.cpp
    src/cv/main/dnn/face/DnnYuNetMain.cpp
+   src/cv/main/dnn/DnnYoloBootMian.cpp
 
 
 
@@ -88,12 +92,13 @@ add_library(SmartSecurityCoreLibTest SHARED
     )
     add_library(SSC-YoloLib SHARED
             src/cv/dnn/yolo/DnnYoloV5.cpp
+            src/cv/dnn/sr/DnnSR.cpp
             src/cv/main/dnn/DnnYoloV5Main.cpp
+            src/cv/main/dnn/sr/DnnSRMain.cpp
+
     )
 
-
-
-     target_link_libraries(SSC-FaceLib
+    target_link_libraries(SSC-FaceLib
             opencv_world4120
     )
      target_link_libraries(SSC-YoloLib
@@ -132,6 +137,12 @@ if(UNIX)
             src/cv/utils/Utils.cpp         #工具类
             src/cv/dnn/face/DnnDetectionFace.cpp
             src/cv/dnn/yolo/DnnYoloV5.cpp
+            src/cv/dnn/facenet/DnnFaceNet.cpp
+            src/cv/dnn/facenet/DnnFaceNet512d.cpp
+            src/cv/dnn/facenet/DnnArcFace.cpp
+            src/cv/dnn/ssd/DnnSSDcaffem.cpp
+            src/cv/dnn/yunet/DnnYuNet.cpp
+            src/cv/dnn/sr/DnnSR.cpp
 
 
 
@@ -140,14 +151,17 @@ if(UNIX)
             src/cv/main/dnn/DnnDetectionFaceMain.cpp
 
             src/cv/main/dnn/DnnYoloV5Main.cpp
-
+            src/cv/main/dnn/sr/DnnSRMain.cpp
+            src/cv/main/dnn/face/DnnSSDcaffemMain.cpp
+            src/cv/main/dnn/face/DnnArcFaceMain.cpp
+            src/cv/main/dnn/face/DnnYuNetMain.cpp
 
 #            src/dlib/utlis/DlibUtils.cpp            #dlib工具类
 #            src/dlib/face/facialRecognition.cpp     #dlib人脸识别
 #            src/dlib/main/face/facialRecognitionMain.cpp
             src/cv/dnn/face/DnnFeatureFace.cpp
             src/cv/main/data/DestroyMain.cpp
-            src/cv/main/dnn/face/DnnYuNetMain.cpp
+
     )
     target_link_libraries(SmartSecurityCoreLibTest
             opencv_world

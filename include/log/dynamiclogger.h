@@ -5,19 +5,21 @@
 #ifndef DYNAMIC_ICLOGGER_H
 #define DYNAMIC_ICLOGGER_H
 #include <chrono>
+#ifdef WIN32
 #include <format>
+#endif
 #include <string>
 #include <iomanip>
 #include <sstream>
 #include <fstream>
 #include <iostream>
 #include <mutex>
-
+#include <functional>
 #include "asm/tidasm.h"
-#ifdef _WIN32
+// #ifdef _WIN32
      #define  I_GET_PID() iasm::GET_PID()
      #define  I_GET_TID() iasm::GET_TID()
-#endif // _WIN32
+// #endif // _WIN32
 
 using std::string;
 using std::to_string;
@@ -59,7 +61,12 @@ namespace Ilogger{
             std::stringstream ss;
             tm tm_buf{};  // 定义 tm 结构体作为缓冲区（线程安全）
             tm* local_tm = &tm_buf;
+            #ifdef WIN32
+
             localtime_s(local_tm, &t);
+            #else
+            localtime_r(&t, local_tm);
+            #endif
             ss << put_time(local_tm, "[ %Y-%m-%d %H:%M:%S ]");
             return ss.str();
         }
@@ -148,11 +155,15 @@ namespace Ilogger{
                       std::invoke(func, std::forward<Args>(args)...);
                       auto end=system_clock::now();
                       auto duration=std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
-                      return std::format("{}ms,success",duration.count());
+                        #ifdef WIN32
+                        return std::format("{}ms,success",duration.count());
+                        #else
+                        return std::to_string(duration.count())+"ms,success";
+                        #endif
                 }catch (std::exception& e)
                 {
                     error(e.what());
-                    return std::format("{}",e.what());
+                    return std::string(e.what());
                 }
             };
 

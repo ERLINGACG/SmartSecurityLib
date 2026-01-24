@@ -16,6 +16,7 @@
 #include "dnn/face/dnnFaceNet512d.h"
 #include "dnn/face/dnnArcFace.h"
 #include "dnn/face/dnnYuNet.h"
+#include "dnn/sr/dnnsr.h"
 #include <vector>              // 新增：向量容器
 #include <memory>              // 新增：智能指针
 #include <chrono>              // 新增：时间测量
