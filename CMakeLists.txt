@@ -137,6 +137,7 @@ if(UNIX)
             src/cv/utils/Utils.cpp         #工具类
             src/cv/dnn/face/DnnDetectionFace.cpp
             src/cv/dnn/yolo/DnnYoloV5.cpp
+            src/cv/dnn/yolo/DnnYoloBoot.cpp
             src/cv/dnn/facenet/DnnFaceNet.cpp
             src/cv/dnn/facenet/DnnFaceNet512d.cpp
             src/cv/dnn/facenet/DnnArcFace.cpp
@@ -155,6 +156,10 @@ if(UNIX)
             src/cv/main/dnn/face/DnnSSDcaffemMain.cpp
             src/cv/main/dnn/face/DnnArcFaceMain.cpp
             src/cv/main/dnn/face/DnnYuNetMain.cpp
+
+
+            src/cv/main/dnn/DnnYoloBootMian.cpp
+
 
 #            src/dlib/utlis/DlibUtils.cpp            #dlib工具类
 #            src/dlib/face/facialRecognition.cpp     #dlib人脸识别
